@@ -8,3 +8,7 @@ Date modified: 29-01-2025
 
 2_Ecol_Mono_EnvironmentalSynchCalcs.R - This file contains the functions for estimating spatial population synchrony for the environment (temperature and precipitation). 
 
+
+
+3_Ecol_Mono_ModelBuilding.R - This file contains code necessary for building universal models and identifying top models. 
+
