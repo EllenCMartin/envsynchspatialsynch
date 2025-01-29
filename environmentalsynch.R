@@ -13,7 +13,16 @@ lonlatproj <- "+proj=longlat +unit=dd +datum=WGS84"
 ## 6. Swedish Bird Survey:Standardrutterna, Department of Biology, Lund University
 ## 7. UK Butterfly Monitoring Scheme (UKBMS), UK Centre for Ecology & Hydrology, Butterfly Conservation, British Trust for Ornithology and Joint Nature Conservation Committee 
 
+
+## Define workspace
+setwd("C:/Users/ema/Desktop/4_Manuscripts/2025 LHT and synchrony birds butterflies/Ecological Monographs - IN REVIEW/Final Submission")
+getwd()
+
+Coords <- read.csv("Coords.csv")
+
 # Convert coordinates into the correct projection (lat-lon)
+lonlatproj <- "+proj=longlat +unit=dd +datum=WGS84"
+
 coordssf2 <- st_as_sf(as.data.frame(Coords), coords = c("X", "Y"), crs = 3035)
 coordssf2 <- st_transform(coordssf2, crs = lonlatproj)
 # Combine original coordinates with transformed ones
@@ -27,6 +36,11 @@ coords_dataframe <- as.data.frame(cbind(coords_df$X, coords_df$Y))
 # Use coords_dataframe (without region labels) or coords_df2 (with region labels) for CRU site extraction
 
 
+### NOTE: Need to download these files from: https://crudata.uea.ac.uk/cru/data/hrg/
+## Precipitation data: https://data.ceda.ac.uk/badc/cru/data/cru_ts/cru_ts_4.08/data/pre
+## Temperature data: https://data.ceda.ac.uk/badc/cru/data/cru_ts/cru_ts_4.08/data/tmp
+## Search for specific files "2cru_ts4.06.1901.2021.pre.dat.nc" and "2cru_ts4.06.1901.2021.tmp.dat.nc". 
+## Download and place in folder called "CRUclimate"
 setwd("CRUclimate")
 nc.pre <- nc_open("2cru_ts4.06.1901.2021.pre.dat.nc")
 nc.temp <- nc_open("2cru_ts4.06.1901.2021.tmp.dat.nc")
@@ -156,5 +170,3 @@ annualmeanprecip.detrended <- environment5C_minyears %>%
 # Create wide-format data for detrended precipitation and temperature
 widetempdetrended <- tidyr::spread(annualmeantemp.detrended, key = year, value = MeanTemp.detrended)
 wideprecipdetrended <- tidyr::spread(annualmeanprecip.detrended, key = year, value = MeanPrecip.detrended)
-
-
