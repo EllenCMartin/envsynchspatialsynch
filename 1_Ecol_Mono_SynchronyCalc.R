@@ -1,7 +1,8 @@
-### FILENAME: synchcalc.R
-### CODE FOR AGGREGATING SURVEY LOCATIONS, CALCULATING SYNCHRONY ON AVERAGE GRID CELLS OF 100x100km
-## Ellen C Martin  
-## Updated 29 09 2023
+### MARTIN ET AL. 2025
+## Life history traits influence environmental impacts on spatial population synchrony in European birds and butterflies
+## Ecological Monologues
+## Code supplement: Calculating synchrony in the environment (temperature and precipitation)
+## Date modified: 29-01-2025
 
 country = "replace with countryname"
 taxa = "replace with taxa"
