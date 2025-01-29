@@ -1,0 +1,202 @@
+
+### RUN MODELS WITH BIRDS AND INSECTS SUBSETTED IN DATA
+datBIRDS = dat[dat$Taxa2%in%c("Birds"),]
+datINSECTS = dat[dat$Taxa2%in%c("Insects"),]
+
+## Fix the data where the estimates of MeanRhoZ are -1 (4 species of insects)
+datINSECTS$Mean250kmZ[which(datINSECTS$Mean250kmZ == -1)] <- datINSECTS$Mean250km
+#datINSECTS$Mean250kmZ[which(datINSECTS$Mean250kmZ == -1)] <- NA
+#datINSECTS <- datINSECTS[!is.na(datINSECTS$Mean250kmZ),]
+
+datBIRDS <- datBIRDS %>%
+  arrange(movement) %>%
+  mutate(movement = factor(movement, levels=c("Resident", "Short", "Long")))
+
+datINSECTS <- datINSECTS %>%
+  arrange(movement) %>%
+  mutate(movement = factor(movement, levels=c("Resident", "Short", "Long")))
+
+
+datBIRDS$Mean250kmZ[datBIRDS$Species == 0.480704229] <- NA
+datBIRDS$Mean250kmZ[datBIRDS$temp < 0.9 & datBIRDS$Species =="Acanthis flammea"] <- 0
+
+datBIRDS[datBIRDS$temp < 0.9,] 
+datBIRDS$Mean250kmZ[datBIRDS$temp > 0.98] <- datBIRDS$meansynchtempannual
+meansynchtempannual 
+
+
+## datBIRDS$specgen[datBIRDS$specgen > 4] <- 4
+library(lme4)
+library(MuMIn)
+##### BIRD SUBSET MODELS: ####
+# Find the 5 lowest values
+lowest_values <- sort(datBIRDS$Mean250kmZ, na.last = TRUE)[1:5]
+datBIRDStest <- datBIRDS[!datBIRDS$Mean250kmZ %in% lowest_values, ]
+
+lowest_values <- sort(datBIRDS$Mean250kmZ, na.last = TRUE)[1:5]
+datBIRDStest <- datBIRDS[!datBIRDS$Mean250kmZ %in% lowest_values, ]
+
+
+
+birdsglobalmod_univariatetemp <- lmer(Mean250kmZ ~ temp.trend +  
+                    LogGenTime * temp.trend + 
+                    specgen * temp.trend  + 
+                    movement * temp.trend +
+                      latrange +
+                    (1|Species) + (1|Country) +
+                    mediandist,
+                      na.action=na.fail, REML = FALSE,  data = datBIRDS)
+
+
+##### BIRD SUBSET MODELS: ####
+birdsglobalmod_univariateprecip <- lmer(Mean250kmZ ~  precip.trend +
+                         slowfast  * precip.trend +
+                         specgen * precip.trend +
+                         movement * precip.trend + 
+                           latrange +
+                           mediandist +
+                          (1|Species) + (1|Country),
+                            na.action=na.fail, REML = FALSE,  data = datBIRDS)
+
+## Valid models can only be the ones including the interaction terms because they are not comparable across taxa. NEed to have this taxa interaction always 
+## Allow the interaction between dataset and taxa to be removed from candidate model set, this does not need to be set.
+## Summary of best and second best model, AIC table of top 5 models.
+## Also nice to see univariate Synch by movement for birds, synch by specgen, synch by slowfast.
+## Also do for body size for insects to see if should be included in slow fast measure. 
+datAIC <- dredge(birdsglobalmod_univariateprecip)
+datAIC <- dredge(birdsglobalmod_univariatetemp)
+
+datAIC2 <- data.frame(datAIC)
+datAIC2$delta <- datAIC2$AICc - min(datAIC2$AICc)
+datAIC2[datAIC2$delta<4,]
+
+
+bestmodBIRDS_precip <- lmer(Mean250kmZ ~  
+                            LogGenTime +
+                            mediandist + 
+                            movement   + 
+                            (1|Species) + (1|Country),  
+                     na.action=na.fail, REML = TRUE,  data = datBIRDS)
+
+
+bestmodBIRDSprecip <- bestmodBIRDS_precip
+
+bestmodBIRDS_temp <- lmer(Mean250kmZ ~ temp   +  
+                            LogGenTime +
+                            movement +
+                            specgen +
+                            LogGenTime*temp +
+                            specgen*temp + 
+                            movement*temp + 
+                       (1|Species) + (1|Country), 
+                     na.action=na.fail, REML = TRUE,  data = datBIRDS)
+bestmodBIRDStemp <- bestmodBIRDS_temp
+
+
+summary(bestmodBIRDS_temp)
+summary(bestmodBIRDS_precip)
+
+r.squaredGLMM(bestmodBIRDS_temp)
+VarCorr(bestmodBIRDS_temp)
+
+library(coefplot2)
+library(emmeans)
+coefplot2(bestmodBIRDS_precip)
+coefplot2(bestmodBIRDS_temp)
+
+
+#emtrends(bestmodBIRDSprecip, pairwise ~ movement, var = "precip")
+#emtrends(bestmodBIRDStemp, pairwise ~ movement, var = " temp")
+bestmodBIRDSframeTEMP <- bestmodBIRDStemp@frame
+bestmodBIRDSframePRECIP <- bestmodBIRDSprecip@frame
+
+
+
+##### INSECT SUBSET MODELS: #################################################
+datINSECTS$MobilityInsect[which(datINSECTS$MobilityInsect == "Migrant ")] <- "Migrant"
+datINSECTS <- datINSECTS[!is.na(datINSECTS$Voltinism),]
+datINSECTS$latrange <- ifelse(datINSECTS$latrange > 6, 6, datINSECTS$latrange)
+
+
+insectsglobalmod_univariatetemp <- lmer(Mean250kmZ ~   temp.trend.std +
+                                     Voltinism * temp.trend.std  + 
+                                     MobilityInsect * temp.trend.std  + 
+                                     specgen  * temp.trend.std  + 
+                                       latrange + 
+                                       mediandist + 
+                                       (1|Species) + (1|Country), 
+                           na.action=na.fail, REML = FALSE,  data = datINSECTS)
+
+insectsglobalmod_univariateprecip <- lmer(Mean250kmZ ~  precip.trend.std + 
+                           Voltinism * precip.trend.std  + 
+                             MobilityInsect * precip.trend.std +
+                          specgen  * precip.trend.std +  mediandist +
+                            latrange + 
+                            (1|Species) + (1|Country), 
+                         na.action=na.fail, REML = FALSE,  data = datINSECTS)
+
+datAIC <- dredge(insectsglobalmod_univariatetemp)
+datAIC <- dredge(insectsglobalmod_univariateprecip)
+
+datAIC2 <- data.frame(datAIC)
+datAIC2$delta <- datAIC2$AICc - min(datAIC2$AICc)
+datAIC2[datAIC2$delta<3,]
+
+
+datINSECTS$Voltinism <- factor(datINSECTS$Voltinism, levels=c("Multi", "Uni/Bi"))
+
+
+bestmodINSECTS_temp <- lmer(Mean250kmZ  ~  
+                              MobilityInsect + 
+                              specgen +
+                  (1|Species) + (1|Country), 
+                  na.action=na.fail, REML = FALSE,  data = datINSECTS)
+
+datINSECTS$MobilityInsect <- factor(datINSECTS$MobilityInsect, levels=c("Non-migrant", "Migrant"))
+bestmodINSECTS_precip <- lmer(Mean250kmZ ~  precip  + 
+                                MobilityInsect  +
+                                specgen + 
+                                Voltinism + 
+                                Voltinism*precip +
+                                mediandist + 
+                                (1|Country) +   (1|Species),
+                              na.action=na.fail, REML = TRUE,  data = datINSECTS)
+
+summary(bestmodINSECTS_precip)
+r.squaredGLMM(bestmodINSECTS_precip)
+library(effects)
+
+effectsINSECTPRECIP<- allEffects(bestmodINSECTS_precip,  se=TRUE, compute=TRUE, confint=TRUE)
+effectsINSECTTEMP$MobilityInsect
+effectsINSECTTEMP$MobilityInsect$se
+effectsINSECTTEMP$specgen
+effectsINSECTTEMP$specgen$lower
+
+
+effectsINSECTPRECIP<- allEffects(bestmodINSECTS_precip, residuals=TRUE,compute=TRUE, confint=TRUE)
+effectsINSECTTEMP$MobilityInsect$se
+effectsINSECTTEMP$MobilityInsect$lower
+effectsINSECTTEMP$Voltinism
+
+
+effectsBIRDSTEMP<- allEffects(bestmodBIRDS_temp, residuals=TRUE, confint=TRUE)
+effectsBIRDSTEMP$MobilityInsect$se
+effectsBIRDSTEMP$MobilityInsect$lower
+
+effectsBIRDSPRECIP<- allEffects(bestmodINSECTS_precip, residuals=TRUE, confint=TRUE)
+effectsBIRDSPRECIP$MobilityInsect$se
+effectsBIRDSPRECIP$MobilityInsect$lower
+
+
+summary(bestmodINSECTS_temp)
+r.squaredGLMM(bestmodINSECTS_temp)
+
+coefplot2(bestmodINSECTS_precip)
+coefplot2(bestmodINSECTS_temp)
+
+
+
+
+
+
+
