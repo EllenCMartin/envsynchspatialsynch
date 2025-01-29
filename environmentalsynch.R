@@ -4,10 +4,14 @@ library(ncdf4)
 lonlatproj <- "+proj=longlat +unit=dd +datum=WGS84"
 
 ## FILES NEEDED FOR THIS CODE TO RUN: 
-## 1. "Coords": a long form file of X and Y coordinates of survey locations
-##     "Coords" available for the following datasets and surveys used in analysis: 
+## 1. "Coords": a long form file of X and Y coordinates of survey locations. "Coords" available for the following datasets and surveys used in analysis: 
 ## 1. National Finnish Butterfly Monitoring Scheme 
-## 2. Sweden Songbirds, Finland Butterfly, UK Butterfly, Sweden Butterfly, Ireland Butterlly. All other countries survey location 
+## 2. Irish Butterfly Monitoring Scheme
+## 3. Bumblebees and Butterflies in Norway, Norwegian Institute for Nature Research. 
+## 4. TOV-E Bird monitoring, Norwegian Institute for Nature Research. 
+## 5. Swedish Butterfly Monitoring Scheme (SeBMS), Department of Biology, Lund University. 
+## 6. Swedish Bird Survey:Standardrutterna, Department of Biology, Lund University
+## 7. UK Butterfly Monitoring Scheme (UKBMS), UK Centre for Ecology & Hydrology, Butterfly Conservation, British Trust for Ornithology and Joint Nature Conservation Committee 
 
 # Convert coordinates into the correct projection (lat-lon)
 coordssf2 <- st_as_sf(as.data.frame(Coords), coords = c("X", "Y"), crs = 3035)
