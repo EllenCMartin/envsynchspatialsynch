@@ -128,6 +128,7 @@ UTM33proj <- "+proj=utm +zone=33 +datum=WGS84"
 
 ## Create grid boundaries
 Country <- sf::st_read("\\NUTS_LVL_3\\Europe_NUTSLVL3.shp") ## Import all European country boundaries to use to create grid
+## NUTS levels are accessed from here: https://ec.europa.eu/eurostat/web/gisco/geodata/statistical-units/territorial-units-statistics
 Country_NUTS3 <- Country[Country$LEVL_CODE == "3",] ## Select the THIRD NUTS level
 COUNTRY_FLAT <- st_transform(Country_NUTS3, crs=3035)
 tempgrid <- st_make_grid(COUNTRY_FLAT, cellsize = c(100000,100000), square = FALSE, crs = 3035) %>%   ##Create an overlay 100 by 100km grid hexagons
