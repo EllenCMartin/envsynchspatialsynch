@@ -12,3 +12,6 @@ Date modified: 29-01-2025
 
 3_Ecol_Mono_ModelBuilding.R - This file contains code necessary for building universal models and identifying top models. 
 
+
+
+4_Ecol_Mono_CODE_Figures.R - This file contains code necessary to reconstruct Figures 2 - 4 in the main manuscript.
